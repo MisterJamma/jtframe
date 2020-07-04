@@ -24,25 +24,26 @@ module jtframe_romrq #(parameter AW=18, DW=8 )(
     input               clr, // clears the cache
     input [21:0]        offset,
     input [AW-1:0]      addr,
-    input               addr_ok,    // signals that value in addr is valid
+    (*keep*) input               addr_ok,    // signals that value in addr is valid
     input [31:0]        din,
-    input               din_ok,
-    input               we,
-    output reg          req,
-    output reg          data_ok,    // strobe that signals that data is ready
+    (*keep*) input               din_ok,
+    (*keep*) input               we,
+    (*keep*) output reg          req,
+    (*keep*) output reg          data_ok,    // strobe that signals that data is ready
     output     [21:0]   sdram_addr,
     output reg [DW-1:0] dout
 );
 
-reg [AW-1:0] addr_req;
+reg [AW-1:0] addr_req, addr_latch;
 
 reg [AW-1:0] cached_addr0;
 reg [AW-1:0] cached_addr1;
 reg [31:0]   cached_data0;
 reg [31:0]   cached_data1;
 reg [1:0]    subaddr;
-reg [1:0]    good;
-reg hit0, hit1;
+(*keep*) reg [1:0]    good;
+(*keep*) reg hit0, hit1;
+(*keep*) reg last_req;
 
 wire  [21:0] size_ext = { {22-AW{1'b0}}, addr_req };
 assign sdram_addr = (DW==8?(size_ext>>1):size_ext ) + offset;
@@ -53,8 +54,8 @@ always @(*) begin
         16: addr_req = {addr[AW-1:1],1'b0};
         32: addr_req = addr;
     endcase
-    hit0 = addr_req === cached_addr0 && good[0];
-    hit1 = addr_req === cached_addr1 && good[1];
+    hit0 = (addr_req == cached_addr0) && good[0];
+    hit1 = (addr_req == cached_addr1) && good[1];
     req = clr || ( !(hit0 || hit1) && addr_ok && !we);
 end
 
@@ -63,14 +64,17 @@ end
 always @(posedge clk, posedge rst)
     if( rst ) begin
         good      <= 2'b00;
+        last_req  <= 0;
     end else begin
+        last_req <= req;
+        if( req && !last_req ) addr_latch <= addr_req;
         if( clr ) good <= 2'b00;
-        data_ok <= addr_ok && ( hit0 || hit1 || (din_ok&&we));
+        data_ok <= /*addr_ok &&*/ ( hit0 || hit1 || (din_ok&&we));
         if( we && din_ok ) begin
             cached_data1 <= cached_data0;
             cached_addr1 <= cached_addr0;
             cached_data0 <= din;
-            cached_addr0 <= addr_req;
+            cached_addr0 <= addr_latch;
             good <= { good[0], 1'b1 };
         end
     end
