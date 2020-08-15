@@ -190,7 +190,7 @@ always @(posedge clk)
         refresh_cycle <= 0;
         write_cycle <= 1'b0;
         read_cycle  <= 1'b0;
-        hold_bus    <= 1'b0;
+        hold_bus    <= 1'b1;
         SDRAM_BA    <= 2'b0;
         SDRAM_DQ    <= 16'hzzzz;
     end else if( initialize ) begin
@@ -315,8 +315,6 @@ always @(posedge clk)
                 refresh_cycle ? CMD_NOP : CMD_READ;
             dq_rdy      <= 1'b0;
             if( write_cycle ) SDRAM_DQ <= dq_out;
-        end
-        if ( cnt_state == ST_THREE ) begin
             if( read_cycle ) hold_bus <= 1'b0;
         end
         if ( cnt_state == ST_FIVE ) begin
