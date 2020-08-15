@@ -164,6 +164,9 @@ bit     |  meaning                | Enabled with macro
 10      | Test mode               | JTFRAME_OSD_TEST
 11      | Aspect Ratio            | MiSTer only
 12      | Credits/Pause           |
+13-14   | DB15/DB9 type           | MiSTer only
+15      | DB15/DB9 players        | MiSTer only
+24-31   | CRT H/V positions       | MiSTer only
 
 If **JTFRAME_FLIP_RESET** is defined a change in dip_flip will reset the game.
 

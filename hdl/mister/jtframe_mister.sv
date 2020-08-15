@@ -81,6 +81,12 @@ module jtframe_mister #(parameter
     input  [ 1:0]   sdram_bank,
     input           sdram_rnw,
     input  [15:0]   data_write,
+    // User port:
+    input     [ 2:0] joydb_cfg,
+    output           USER_OSD,
+    output    [ 1:0] USER_MODE,
+    input     [ 7:0] USER_IN,
+    output    [ 7:0] USER_OUT,
 //////////// board
     output          rst,      // synchronous reset
     output          rst_n,    // asynchronous reset
@@ -149,7 +155,8 @@ assign { voffset, hoffset } = status[31:24];
 assign downloading = ioctl_download &&ioctl_index==8'd0;
 assign LED  = downloading | dwnld_busy;
 
-wire [15:0]   joystick1, joystick2, joystick3, joystick4;
+wire [31:0]   hps_joystick0, hps_joystick1, hps_joystick2, hps_joystick3;
+wire [31:0]   db_joystick0,  db_joystick1;
 wire          ps2_kbd_clk, ps2_kbd_data;
 wire          force_scan2x, direct_video;
 
@@ -274,6 +281,22 @@ wire [15:0] status_menumask;
 assign status_menumask[15:1] = 15'd0;
 assign status_menumask[0]    = direct_video;
 
+jtframe_db9joy u_db9joy(
+    .clk            ( clk_rom        ),
+    .JOY_FLAG       ( joydb_cfg      ),
+
+    .Joystick_0_USB ( hps_joystick0  ),
+    .Joystick_1_USB ( hps_joystick1  ),
+
+    .joystick_0     ( db_joystick0   ),
+    .joystick_1     ( db_joystick1   ),
+    // User port
+    .USER_OSD       ( USER_OSD       ),
+    .USER_MODE      ( USER_MODE      ),
+    .USER_IN        ( USER_IN        ),
+    .USER_OUT       ( USER_OUT       ),
+);
+
 hps_io #( .STRLEN($size(CONF_STR)/8), .PS2DIV(32), .WIDE(JTFRAME_MR_FASTIO) ) u_hps_io
 (
     .clk_sys         ( clk_rom        ),
@@ -293,10 +316,10 @@ hps_io #( .STRLEN($size(CONF_STR)/8), .PS2DIV(32), .WIDE(JTFRAME_MR_FASTIO) ) u_
     .ioctl_dout      ( dwnld_data     ),
     .ioctl_index     ( ioctl_index    ),
 
-    .joystick_0      ( joystick1      ),
-    .joystick_1      ( joystick2      ),
-    .joystick_2      ( joystick3      ),
-    .joystick_3      ( joystick4      ),
+    .joystick_0      ( hps_joystick0  ),
+    .joystick_1      ( hps_joystick1  ),
+    .joystick_2      ( hps_joystick2  ),
+    .joystick_3      ( hps_joystick3  ),
     .joystick_analog_0( joystick_analog_0   ),
     .joystick_analog_1( joystick_analog_1   ),
     .ps2_kbd_clk_out ( ps2_kbd_clk    ),
@@ -334,8 +357,8 @@ jtframe_board #(
     .ps2_kbd_data   ( ps2_kbd_data    ),
     .board_joystick1( joystick1       ),
     .board_joystick2( joystick2       ),
-    .board_joystick3( joystick3       ),
-    .board_joystick4( joystick4       ),
+    .board_joystick3( hps_joystick2[15:0] ),
+    .board_joystick4( hps_joystick3[15:0] ),
     .game_joystick1 ( game_joystick1  ),
     .game_joystick2 ( game_joystick2  ),
     .game_joystick3 ( game_joystick3  ),

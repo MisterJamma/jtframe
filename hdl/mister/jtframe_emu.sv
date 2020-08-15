@@ -20,8 +20,6 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //============================================================================
 
-`timescale 1ns/1ps
-
 module emu
 (
     //Master input clock
@@ -98,8 +96,11 @@ module emu
     // 1 - D-/TX
     // 2..6 - USR2..USR6
     // Set USER_OUT to 1 to read from USER_IN.
-    input   [6:0] USER_IN,
-    output  [6:0] USER_OUT
+    output        USER_OSD,
+    output  [1:0] USER_MODE,
+    input   [7:0] USER_IN,
+    output  [7:0] USER_OUT
+
     `ifdef SIMULATION
     ,output         sim_pxl_cen,
     output          sim_pxl_clk,
@@ -150,7 +151,7 @@ localparam CONF_STR = {
     `ifdef JTFRAME_OSD_TEST
     "OA,Test mode,Off,On;",
     `endif
-    `SEPARATOR    
+    `SEPARATOR
     `ifdef JTFRAME_MRA_DIP
     "DIP;",
     `endif
@@ -165,6 +166,9 @@ localparam CONF_STR = {
     `ifdef CORE_KEYMAP
     `CORE_KEYMAP
     `endif
+    "-;",
+    "ODE,UserIO Joystick,Off,DB15 ,DB9MD;",
+    "OF,UserIO Players, 1 Player,2 Players;",
     "V,v",`BUILD_DATE," jotego;"
 };
 `endif
@@ -177,9 +181,11 @@ assign VGA_F1=1'b0;
 wire   field;
 assign VGA_F1=field;
 `endif
-assign USER_OUT = '1;
 
 wire [3:0] hoffset, voffset;
+
+///////////// DB-9 support
+wire   [2:0] joydb_cfg = {status[15:13]}; //Assign 3 bits of status
 
 ////////////////////   CLOCKS   ///////////////////
 
@@ -371,6 +377,12 @@ u_frame(
     .sdram_wrmask   ( sdram_wrmask   ),
     .sdram_rnw      ( sdram_rnw      ),
     .data_write     ( data_write     ),
+    // User port
+    .joydb_cfg      ( joydb_cfg      ),
+    .USER_OSD       ( USER_OSD       ),
+    .USER_MODE      ( USER_MODE      ),
+    .USER_IN        ( USER_IN        ),
+    .USER_OUT       ( USER_OUT       ),
 //////////// board
     .rst            ( rst            ),
     .rst_n          ( rst_n          ), // unused

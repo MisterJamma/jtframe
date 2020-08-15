@@ -34,13 +34,14 @@ module hps_io #(parameter STRLEN=0, PS2DIV=0, WIDE=0, VDNUM=1, PS2WE=0)
 	input [(8*STRLEN)-1:0] conf_str,
 
 	// buttons up to 32
+	input      [ 5:0] joy_raw,
 	output reg [31:0] joystick_0,
 	output reg [31:0] joystick_1,
 	output reg [31:0] joystick_2,
 	output reg [31:0] joystick_3,
 	output reg [31:0] joystick_4,
 	output reg [31:0] joystick_5,
-	
+
 	// analog -127..+127, Y: [15:8], X: [7:0]
 	output reg [15:0] joystick_analog_0,
 	output reg [15:0] joystick_analog_1,
@@ -48,9 +49,6 @@ module hps_io #(parameter STRLEN=0, PS2DIV=0, WIDE=0, VDNUM=1, PS2WE=0)
 	output reg [15:0] joystick_analog_3,
 	output reg [15:0] joystick_analog_4,
 	output reg [15:0] joystick_analog_5,
-
-	// Snac
-	input      [15:0] joy_raw,
 
 	// paddle 0..255
 	output reg  [7:0] paddle_0,
@@ -308,12 +306,11 @@ always@(posedge clk_sys) begin
 		end else begin
 
 			case(cmd)
-				 // Reading user_io raw joy
-				'h0f: io_dout <= joy_raw;
 				// buttons and switches
 				'h01: cfg <= io_din;
 				'h02: if(byte_cnt==1) joystick_0[15:0] <= io_din; else joystick_0[31:16] <= io_din;
 				'h03: if(byte_cnt==1) joystick_1[15:0] <= io_din; else joystick_1[31:16] <= io_din;
+				'h0f: io_dout <= {10'd0, joy_raw};
 				'h10: if(byte_cnt==1) joystick_2[15:0] <= io_din; else joystick_2[31:16] <= io_din;
 				'h11: if(byte_cnt==1) joystick_3[15:0] <= io_din; else joystick_3[31:16] <= io_din;
 				'h12: if(byte_cnt==1) joystick_4[15:0] <= io_din; else joystick_4[31:16] <= io_din;
@@ -469,7 +466,7 @@ always@(posedge clk_sys) begin
 
 				//menu mask
 				'h2E: if(byte_cnt == 1) io_dout <= status_menumask;
-				
+
 				//sdram size set
 				'h31: if(byte_cnt == 1) sdram_sz <= io_din;
 
@@ -566,7 +563,7 @@ always@(posedge clk_sys) begin
 	reg        has_cmd;
 	reg [26:0] addr;
 	reg        wr;
-	
+
 	ioctl_wr <= wr;
 	wr <= 0;
 
