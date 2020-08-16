@@ -294,7 +294,7 @@ jtframe_db9joy u_db9joy(
     .USER_OSD       ( USER_OSD       ),
     .USER_MODE      ( USER_MODE      ),
     .USER_IN        ( USER_IN        ),
-    .USER_OUT       ( USER_OUT       ),
+    .USER_OUT       ( USER_OUT       )
 );
 
 hps_io #( .STRLEN($size(CONF_STR)/8), .PS2DIV(32), .WIDE(JTFRAME_MR_FASTIO) ) u_hps_io
@@ -355,8 +355,8 @@ jtframe_board #(
     // joystick
     .ps2_kbd_clk    ( ps2_kbd_clk     ),
     .ps2_kbd_data   ( ps2_kbd_data    ),
-    .board_joystick1( joystick1       ),
-    .board_joystick2( joystick2       ),
+    .board_joystick1( db_joystick0    ),
+    .board_joystick2( db_joystick1    ),
     .board_joystick3( hps_joystick2[15:0] ),
     .board_joystick4( hps_joystick3[15:0] ),
     .game_joystick1 ( game_joystick1  ),
