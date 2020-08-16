@@ -37,7 +37,7 @@ module jtframe_db9joy(
 
 wire  [15:0] JOYDB9MD_1, JOYDB9MD_2, JOYDB15_1, JOYDB15_2;
 wire         JOY_CLK, JOY_LOAD, JOY_SPLIT, JOY_MDSEL;
-wire  [ 5:0] JOY_MDIN  = JOY_FLAG[2] ? {USER_IN[6],USER_IN[3],USER_IN[5],USER_IN[7],USER_IN[1],USER_IN[2]} : ~5'd0;
+wire  [ 5:0] JOY_MDIN  = JOY_FLAG[2] ? {USER_IN[6],USER_IN[3],USER_IN[5],USER_IN[7],USER_IN[1],USER_IN[2]} : ~6'd0;
 wire         JOY_DATA  = JOY_FLAG[1] ? USER_IN[5] : 1'd1;
 assign       USER_OUT  = JOY_FLAG[2] ? {3'b111,JOY_SPLIT,3'b111,JOY_MDSEL} : JOY_FLAG[1] ? {6'b111111,JOY_CLK,JOY_LOAD} : ~8'd0;
 assign       USER_MODE = JOY_FLAG[2:1];

@@ -167,7 +167,7 @@ localparam CONF_STR = {
     `CORE_KEYMAP
     `endif
     "-;",
-    "ODE,UserIO Joystick,Off,DB15 ,DB9MD;",
+    "ODE,UserIO Joystick,Off,DB15,DB9MD;",
     "OF,UserIO Players, 1 Player,2 Players;",
     "V,v",`BUILD_DATE," jotego;"
 };
@@ -185,7 +185,7 @@ assign VGA_F1=field;
 wire [3:0] hoffset, voffset;
 
 ///////////// DB-9 support
-wire   [2:0] joydb_cfg = {status[15:13]}; //Assign 3 bits of status
+wire   [2:0] joydb_cfg = {status[12], status[13], status[15]}; //Assign 3 bits of status
 
 ////////////////////   CLOCKS   ///////////////////
 
