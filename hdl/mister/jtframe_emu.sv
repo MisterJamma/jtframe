@@ -23,6 +23,7 @@
 `timescale 1ns/1ps
 
 module emu
+    import sys_pkg::*;
 (
     //Master input clock
     input         CLK_50M,
@@ -99,7 +100,8 @@ module emu
     // 2..6 - USR2..USR6
     // Set USER_OUT to 1 to read from USER_IN.
     input   [6:0] USER_IN,
-    output  [6:0] USER_OUT
+    output  [6:0] USER_OUT,
+    input   jamma_in_t JAMMA_IN
     `ifdef SIMULATION
     ,output         sim_pxl_cen,
     output          sim_pxl_clk,
@@ -247,8 +249,18 @@ wire        ioctl_rom_wr;
 wire [24:0] ioctl_addr;
 wire [ 7:0] ioctl_data;
 
-wire [ 9:0] game_joy1, game_joy2, game_joy3, game_joy4;
-wire [ 3:0] game_coin, game_start;
+wire [ 9:0] frame_joy1, frame_joy2, frame_joy3, frame_joy4;
+wire [ 3:0] frame_coin, frame_start;
+
+// Combine JAMMA_IN controls with framework controls
+// Should really be using the GAME_INPUTS_ACTIVE_LOW parameter
+wire [ 9:0] game_joy1  = frame_joy1 & ~{JAMMA_IN.p[1].button[6:1], JAMMA_IN.p[1].u, JAMMA_IN.p[1].d, JAMMA_IN.p[1].l, JAMMA_IN.p[1].r};
+wire [ 9:0] game_joy2  = frame_joy1 & ~{JAMMA_IN.p[2].button[6:1], JAMMA_IN.p[2].u, JAMMA_IN.p[2].d, JAMMA_IN.p[2].l, JAMMA_IN.p[2].r};
+wire [ 9:0] game_joy3  = frame_joy3;
+wire [ 9:0] game_joy4  = frame_joy4;
+wire [ 3:0] game_coin  = {frame_coin[3:2],  frame_coin[1]  & ~JAMMA_IN.p[2].coin,  frame_coin[0]  & ~JAMMA_IN.p[1].coin};
+wire [ 3:0] game_start = {frame_start[3:2], frame_start[1] & ~JAMMA_IN.p[2].start, frame_start[0] & ~JAMMA_IN.p[1].start};
+
 wire [ 3:0] gfx_en;
 wire [15:0] joystick_analog_0, joystick_analog_1;
 
@@ -379,12 +391,12 @@ u_frame(
     // reset forcing signals:
     .rst_req        ( rst_req        ),
     // joystick
-    .game_joystick1 ( game_joy1      ),
-    .game_joystick2 ( game_joy2      ),
-    .game_joystick3 ( game_joy3      ),
-    .game_joystick4 ( game_joy4      ),
-    .game_coin      ( game_coin      ),
-    .game_start     ( game_start     ),
+    .game_joystick1 ( frame_joy1     ),
+    .game_joystick2 ( frame_joy2     ),
+    .game_joystick3 ( frame_joy3     ),
+    .game_joystick4 ( frame_joy4     ),
+    .game_coin      ( frame_coin     ),
+    .game_start     ( frame_start    ),
     .game_service   (                ), // unused
     .joystick_analog_0( joystick_analog_0 ),
     .joystick_analog_1( joystick_analog_1 ),
